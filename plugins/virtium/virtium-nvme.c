@@ -1042,3 +1042,60 @@ static int vt_show_identify(int argc, char **argv, struct command *cmd, struct p
 	close(fd);
 	return (err);
 }
+
+static int vt_get_custom_fw_string(int argc, char **argv, struct command *cmd, struct plugin *plugin) 
+{
+	int fd, ret;
+	int cmd_data_len = 512;
+	int ret_len = 100;
+
+	OPT_ARGS(opts) = {
+		OPT_END()
+	};
+
+	fd = parse_and_open(argc, argv, "", opts);
+	if (fd < 0) {
+		printf("Error parse and open (fd = %d)\n", fd);
+		return -1;
+	}
+	
+	__u8* data = calloc(cmd_data_len, sizeof(__u8));
+	data[0] = 0x16;
+
+	struct nvme_admin_cmd setup_vsc_get_fw = {
+		.opcode = 0xfd,
+		.cdw12 = 0x00fc,
+		.cdw10 = 128,
+		.data_len = cmd_data_len,
+		.addr = (uintptr_t)data
+	};
+
+	// setup vsc
+	ret = nvme_submit_admin_passthru(fd, &setup_vsc_get_fw);
+	if (ret != 0) {
+		printf("Error during admin cmd passthru (ret = %d)!\n", ret);
+		free(data);
+		return ret;
+	}
+
+	struct nvme_admin_cmd vsc_get_fw = {
+		.opcode = 0xfe,
+		.cdw12 = 0x00fd,
+		.cdw10 = 25,
+		.data_len = ret_len,
+		.addr = (uintptr_t)data
+	};
+
+	// exec vsc and get fw string back
+	ret = nvme_submit_admin_passthru(fd, &vsc_get_fw);
+	if (ret != 0) {
+		printf("Error during admin cmd passthru (ret = %d)!\n", ret);
+		free(data);
+		return ret;
+	}
+	printf("F/W Version String: %s\n", data);
+	
+	free(data);
+
+	return ret;
+}
