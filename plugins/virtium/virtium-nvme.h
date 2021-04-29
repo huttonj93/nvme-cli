@@ -13,7 +13,8 @@ PLUGIN(NAME("virtium", "Virtium vendor specific extensions"),
                              The data in this log file can be analyzed using excel or using Virtium’s vtView.\n\
                              Visit vtView.virtium.com to see full potential uses of the data", vt_save_smart_to_vtview_log)
             ENTRY("show-identify", "Shows detail features and current settings", vt_show_identify)
-            ENTRY("get-fw-version", "Returns custom firmware string", vt_get_custom_fw_string)
+            ENTRY("get-maverick-fw-version", "Prints custom firmware string for Maverick devices to the console", vt_get_maverick_fw_string)
+            ENTRY("parse-maverick-telemetry", "Prints formatted Maverick-specific telemetry data block", vt_parse_maverick_telemetry)
     )
 );
 

@@ -53,6 +53,173 @@ struct vtview_save_log_settings {
 	const char*	test_name;
 };
 
+// Maverick telemetry data block description
+typedef struct _nvme_host_tele_log_data_t
+{
+    // Thermal info                         offset 0x200
+    uint8_t  res0[16];
+    uint16_t min_composite_temp;            ///< Minumum temperature in life of controller
+    uint8_t  res1[2];
+    uint16_t max_composite_temp;            ///< Maximum temperature in life of controller
+    uint8_t  res2[10];
+    uint32_t shutdown_transition_count;     ///< Enter shutdown mode count
+    uint8_t  res3[4];
+    uint8_t  max_thermal_state;             ///< Maximum thermal mode from power-on
+    uint8_t  res4[7];
+    // Bad info                             offset 0x230
+    uint16_t num_valid_spare_block;         ///< Total available spare block count
+    uint16_t num_initial_invalid_block;     ///< Total initial bad block count
+    uint16_t run_time_bad_block;            ///< Total runtime block count
+    uint16_t on_line_retired_block;         ///< Total retired block count that tigger by host read command
+    uint16_t off_line_retired_block;        ///< Total retired block count that tigger by controller management
+    uint8_t  res5[6];
+    // PE Info                              offset 0x240
+    uint32_t total_erase_count;             ///< Total erase Count that collect from NAND
+    uint32_t max_erase_count;               ///< Maximum erase Count that collect from NAND
+    uint32_t min_erase_count;               ///< Minimum erase Count that collect from NAND
+    uint32_t avg_erase_count;               ///< Average erase Count that collect from NAND
+    uint32_t slc_total_erase_count;         ///< Total erase Count of pSLC mode block that collect from NAND
+    uint32_t slc_max_erase_count;           ///< Maximum erase Count of SLC mode block that collect from NAND
+    uint32_t slc_min_erase_count;           ///< Minimum erase Count of SLC mode block that collect from NAND
+    uint32_t slc_avg_erase_count;           ///< Average erase Count of SLC mode block that collect from NAND
+    uint32_t tlc_total_erase_count;         ///< Total erase Count of TLC mode block that collect from NAND
+    uint32_t tlc_max_erase_count;           ///< Maximum erase Count of TLC mode block that collect from NAND
+    uint32_t tlc_min_erase_count;           ///< Minimum erase Count of TLC mode block that collect from NAND
+    uint32_t tlc_avg_erase_count;           ///< Average erase Count of TLC mode block that collect from NAND
+    uint8_t  res6[16];
+    // Endurance Info                       offset 0x280
+    uint8_t  slc_remaining_life_pe;         ///< Remain life percentage base on SLC used erase count
+    uint8_t  slc_remaining_life_spare;      ///< Remain life percentage base on remain available spare count
+    uint8_t  res7[4];
+    uint8_t  tlc_remaining_life_pe;         ///< Remain life percentage base on TLC used erase count
+    uint8_t  res8[9];
+    uint64_t slc_total_write_count;         ///< Total SLC program sector count
+    uint64_t tlc_total_write_count;         ///< Total TLC program sector count
+    // Retry Info                           offset 0x2A0
+    uint8_t  res9[4];
+    uint32_t hw_entry_soft_decode;          ///< Total trigger to do LDPC soft decode count
+    uint32_t hw_entry_raid_count;           ///< Total trigger to do RAID decode count
+    uint32_t on_line_refresh_count;         ///< Total refresh block count that tigger by host read command
+    uint32_t off_line_refresh_count;        ///< Total refresh block count that tigger by controller management
+    uint32_t on_line_unc_chunk_count;       ///< Total UNC count that tigger by host read command
+    uint32_t off_line_unc_chunk_count;      ///< Total UNC count that tigger by controller management
+    uint16_t program_fail_blk_count;        ///< Total program failed block count
+    uint16_t erase_fail_blk_count;          ///< Total erase failed block count
+    uint16_t read_ecc_fail_blk_count;       ///< Total read ECC uncorrectable block count
+    uint8_t  res10[14];
+
+    uint8_t  res11[16];
+    // Intelligent Scan Info                offset 0x2E0
+    uint32_t on_line_scan_times;            ///< Total trigger to do scan count in device is doing read/write I/O 
+    uint32_t on_line_scan_blkcnt;           ///< Total trigger to do scan block count in device is doing read/write I/O 
+    uint32_t off_line_scan_times;           ///< Total trigger to do scan count in device is in idle
+    uint32_t off_line_scan_blkcnt;          ///< Total trigger to do scan block count in device is in idle
+    uint8_t  res12[16];
+    // Error Info                           offset 0x300
+    uint32_t read_unc_cmd_count;            ///< Total return UNC error read command count
+    uint32_t pcie_fatal_err_count;          ///< Totel PCIe fatal error count that from PERST/NSSRT/FLR/Link RST happens in R/W
+    uint32_t pcie_interface_downsft_count;  ///< Total PCIe speed downshift count that compare current speed to power-on speed
+    uint32_t e2e_tag_err_count;             ///< Total return E2E error count
+    uint16_t dram_one_bit_err_count;        ///< Total DRAM 1 bit error count
+    uint16_t dram_two_bit_err_count;        ///< Total DRAM 2 bits error count
+    uint16_t tsb_one_bit_err_count;         ///< Total SRAM 1 bit error count
+    uint16_t tsb_two_bit_err_count;         ///< Total SRAM 2 bits error count
+    uint8_t  res13[8];
+    uint32_t vdt_27_fail_count;             ///< Total intial VDT detected 3.3V dropped to 2.7V count
+    uint32_t pcie_gen1_link_count;          ///< Total PCIe link up in Gen1 count
+    uint32_t pcie_gen2_link_count;          ///< Total PCIe link up in Gen2 count
+    uint32_t pcie_gen3_link_count;          ///< Total PCIe link up in Gen3 count
+    uint64_t ecrc_event_count;              ///< Total PCIe ECRC happen count
+    uint64_t lcrc_event_count;              ///< Total PCIe LCRC happen count
+    uint32_t pcie_gen4_link_count;          ///< Total PCIe link up in Gen4 count
+
+    uint8_t  res14[28];                     // offset 0x340
+    // System Info                          offset 0x360
+    uint8_t  res15[12];
+    uint8_t  pcie_link_speed;               ///< Current PCIe link up speed
+    uint8_t  pcie_link_width;               ///< Current PCIe link up width
+    uint8_t  res16[2];
+
+    uint8_t  res17[16];
+    // New Defined Info                     offset 0x380
+    uint8_t  nand_temp[32];                 ///< Current all NAND dies temperature;
+    uint32_t pcie_error_reg0;               ///< PCIe error register
+    uint32_t pciex1_link_count;             ///< Total PCIe link up in width=x1 count
+    uint32_t pciex2_link_count;             ///< Total PCIe link up in width=x2 count
+    uint32_t pciex4_link_count;             ///< Total PCIe link up in width=x4 count
+} nvme_host_tele_log_data_t;
+
+static void print_tel_data_block(nvme_host_tele_log_data_t* data_block)
+{
+	printf("min composite temp: %d\n", data_block->min_composite_temp);
+	printf("max composite temp: %d\n", data_block->max_composite_temp);
+	printf("shutdown transition count: %d\n", data_block->shutdown_transition_count);
+	printf("max thermal state: %d\n", data_block->max_thermal_state);
+	printf("total spare block count: %d\n", data_block->num_valid_spare_block);
+	printf("total initial bad block count: %d\n", data_block->num_initial_invalid_block);
+	printf("total runtime bad block count: %d\n", data_block->run_time_bad_block);
+	printf("on line retired block: %d\n", data_block->on_line_retired_block);
+	printf("off line retired block: %d\n", data_block->off_line_retired_block);
+	printf("total erase count: %d\n", data_block->total_erase_count);
+	printf("max erase count: %d\n", data_block->max_erase_count);
+	printf("min erase count: %d\n", data_block->min_erase_count);
+	printf("avg erase count: %d\n", data_block->avg_erase_count);
+	printf("slc total erase count: %d\n", data_block->slc_total_erase_count);
+	printf("slc max erase count: %d\n", data_block->slc_max_erase_count);
+	printf("slc min erase count: %d\n", data_block->slc_min_erase_count);
+	printf("slc avg erase count: %d\n", data_block->slc_avg_erase_count);
+	printf("tlc total erase count: %d\n", data_block->tlc_total_erase_count);
+	printf("tlc max erase count: %d\n", data_block->tlc_max_erase_count);
+	printf("tlc min erase count: %d\n", data_block->tlc_min_erase_count);
+	printf("tlc avg erase count: %d\n", data_block->tlc_avg_erase_count);
+	printf("percent slc remaining life pe: %d\n", data_block->slc_remaining_life_pe);
+	printf("percent slc remaining life spare count: %d\n", data_block->slc_remaining_life_spare);
+	printf("percent tlc remaining life pe: %d\n", data_block->tlc_remaining_life_pe);
+	printf("total slc progam sector count: %ld\n", data_block->slc_total_write_count);
+	printf("total tlc progam sector count: %ld\n", data_block->tlc_total_write_count);
+	printf("hw entry soft decode: %d\n", data_block->hw_entry_soft_decode);
+	printf("hw entry raid count: %d\n", data_block->hw_entry_raid_count);
+	printf("on line refresh count: %d\n", data_block->on_line_refresh_count);
+	printf("off line refresh count: %d\n", data_block->off_line_refresh_count);
+	printf("on line unc chunk count: %d\n", data_block->on_line_unc_chunk_count);
+	printf("off line unc chunk count: %d\n", data_block->off_line_unc_chunk_count);
+	printf("program fail block count: %d\n", data_block->program_fail_blk_count);
+	printf("erase fail blk count: %d\n", data_block->erase_fail_blk_count);
+	printf("Total read ECC uncorrectable block count: %d\n", data_block->read_ecc_fail_blk_count);
+	printf("on line scan times: %d\n", data_block->on_line_scan_times);
+	printf("on line scan block count: %d\n", data_block->on_line_scan_blkcnt);
+	printf("off line scan times: %d\n", data_block->off_line_scan_times);
+	printf("off line scan block count: %d\n", data_block->off_line_scan_blkcnt);
+	printf("unc error read command count: %d\n", data_block->read_unc_cmd_count);
+	printf("pcie fatal error count: %d\n", data_block->pcie_fatal_err_count);
+	printf("pcie interface downshift count: %d\n", data_block->pcie_interface_downsft_count);
+	printf("e2e error count: %d\n", data_block->e2e_tag_err_count);
+	printf("dram 1 bit error count: %d\n", data_block->dram_one_bit_err_count);
+	printf("dram 2 bit error count: %d\n", data_block->dram_two_bit_err_count);
+	printf("sram 1 bit error count: %d\n", data_block->tsb_one_bit_err_count);
+	printf("sram 2 bit error count: %d\n", data_block->tsb_two_bit_err_count);
+	printf("Total initial VDT detected 3.3V dropped to 2.7V count: %d\n", data_block->vdt_27_fail_count);
+	printf("PCIe link up in Gen1 count: %d\n", data_block->pcie_gen1_link_count);
+	printf("PCIe link up in Gen2 count: %d\n", data_block->pcie_gen2_link_count);
+	printf("PCIe link up in Gen3 count: %d\n", data_block->pcie_gen3_link_count);
+	printf("ecrc event count: %ld\n", data_block->ecrc_event_count);
+	printf("lcrc event count: %ld\n", data_block->lcrc_event_count);
+	printf("PCIe link up in Gen3 count: %d\n", data_block->pcie_gen4_link_count);
+	printf("Current PCIe link up speed: %d\n", data_block->pcie_link_speed);
+	printf("Current PCIe link up width: %d\n", data_block->pcie_link_width);
+
+	printf("All NAND die temps: ");
+	for (int i = 0; i < 32; i++) {
+		printf("%d ", data_block->nand_temp[i]);
+	}
+	printf("\n");
+
+	printf("PCIe error register: %d\n", data_block->pcie_error_reg0);
+	printf("PCIe link up in width=x1 count: %d\n", data_block->pciex1_link_count);
+	printf("PCIe link up in width=x2 count: %d\n", data_block->pciex2_link_count);
+	printf("PCIe link up in width=x4 count: %d\n", data_block->pciex4_link_count);
+}
+
 static long double int128_to_double(__u8 *data)
 {
 	int i;
@@ -1043,7 +1210,7 @@ static int vt_show_identify(int argc, char **argv, struct command *cmd, struct p
 	return (err);
 }
 
-static int vt_get_custom_fw_string(int argc, char **argv, struct command *cmd, struct plugin *plugin) 
+static int vt_get_maverick_fw_string(int argc, char **argv, struct command *cmd, struct plugin *plugin) 
 {
 	int fd, ret;
 	int cmd_data_len = 512;
@@ -1098,4 +1265,30 @@ static int vt_get_custom_fw_string(int argc, char **argv, struct command *cmd, s
 	free(data);
 
 	return ret;
+}
+
+static int vt_parse_maverick_telemetry(int argc, char **argv, struct command *cmd, struct plugin *plugin)
+{
+	OPT_ARGS(opts) = {
+		OPT_END()
+	};
+
+	int fd = parse_and_open(argc, argv, "", opts);
+	if (fd < 0) {
+		printf("Error parse and open (fd = %d)\n", fd);
+		return -1;
+	}
+
+	int log_len = 1024;
+	unsigned char* log_data = malloc(log_len);
+	int err = nvme_get_log(fd, NVME_NSID_ALL, 7, 0, 1, log_len, log_data);
+
+	nvme_host_tele_log_data_t data_block;
+	memcpy(&data_block, log_data + 512, sizeof(data_block));
+
+	print_tel_data_block(&data_block);
+
+	free(log_data);
+
+	return err;
 }
