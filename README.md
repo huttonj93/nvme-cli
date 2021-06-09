@@ -26,7 +26,7 @@ The following are all implemented sub-commands:
   show-identify              Shows detail features and current settings
   get-maverick-fw-version    Prints custom firmware string for Maverick devices to the console
   parse-maverick-telemetry   Prints formatted Maverick-specific telemetry data block
-  parse-bali-vs-info         Prints formatted Bali-specific info block (Log 0xC6h)
+  parse-series61-vs-info     Prints formatted Series-61-specific info block (Log 0xC6h)
   version                    Shows the program version
   help                       Display this help
 
