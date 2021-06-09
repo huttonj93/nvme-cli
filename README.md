@@ -1,3 +1,39 @@
+# Instructions to download and install the Virtium Plugin
+
+To obtain the most recent version of Virtium's nvme-cli plugin, you can run the following commands:
+
+```
+git clone https://github.com/Virtium-US/nvme-cli.git
+cd nvme-cli
+git checkout virtium-vscs
+sudo make install
+
+nvme viritum help
+
+# Below is the contents of the Viritum plugin's help page:
+
+usage: nvme virtium <command> [<device>] [<args>]
+
+The '<device>' may be either an NVMe character device (ex: /dev/nvme0) or an
+nvme block device (ex: /dev/nvme0n1).
+
+Virtium vendor specific extensions
+
+The following are all implemented sub-commands:
+  save-smart-to-vtview-log   Periodically save smart attributes into a log file.
+                             The data in this log file can be analyzed using excel or using Virtium’s vtView.
+                             Visit vtView.virtium.com to see full potential uses of the data
+  show-identify              Shows detail features and current settings
+  get-maverick-fw-version    Prints custom firmware string for Maverick devices to the console
+  parse-maverick-telemetry   Prints formatted Maverick-specific telemetry data block
+  parse-bali-vs-info         Prints formatted Bali-specific info block (Log 0xC6h)
+  version                    Shows the program version
+  help                       Display this help
+
+See 'nvme virtium help <command>' for more information on a specific command
+```
+This will replace the current version of nvme-cli installed on your system. The contents of the help page should put you well on your way. If you do **not** want to replace the version of nvme-cli installed on your system, you can just run `make` instead of `sudo make install`. Please note, if you do not replace the installed version of nvme-cli, you will need to invoke the local executable (i.e. `./nvme virtium help`). 
+
 # nvme-cli
 NVM-Express user space tooling for Linux.
 
