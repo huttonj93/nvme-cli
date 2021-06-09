@@ -15,6 +15,7 @@ PLUGIN(NAME("virtium", "Virtium vendor specific extensions"),
             ENTRY("show-identify", "Shows detail features and current settings", vt_show_identify)
             ENTRY("get-maverick-fw-version", "Prints custom firmware string for Maverick devices to the console", vt_get_maverick_fw_string)
             ENTRY("parse-maverick-telemetry", "Prints formatted Maverick-specific telemetry data block", vt_parse_maverick_telemetry)
+            ENTRY("parse-bali-vs-info", "Prints formatted Bali-specific info block (Log 0xC6h)", vt_parse_bali_vs_info)
     )
 );
 

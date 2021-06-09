@@ -53,8 +53,136 @@ struct vtview_save_log_settings {
 	const char*	test_name;
 };
 
+
+// SM226X (Bali) vendor specific log page 0xC6
+typedef struct _bali_vs_logpage_c6h {
+	uint64_t version8;
+	uint64_t reallocSectorCount;
+	uint64_t slcReallocSectorCount;
+	uint64_t powerOnHoursCount;
+	uint64_t uncorrectableErrorCount1;
+	uint64_t uncorrectableErrorCount2;
+	uint64_t eccUnc;
+	uint64_t softLDPCCorrectionEventCount;
+	uint64_t tlcReadRetryFail;
+	uint64_t slcReadRetryFail;
+	uint64_t temperature;
+	uint64_t readRetryTrigger;
+	uint64_t totalLBAsWritten;
+	uint64_t totalLBAsRead;
+	uint64_t ps3Count;
+	uint64_t ps4Count;
+	uint64_t l1_2Count;
+	uint64_t tlcAvailSpareBlocks;
+	uint64_t slcAvailSpareBlocks;
+	uint64_t wearRangeDelta1;
+	uint64_t wearRangeDelta2;
+	uint64_t highTemp;
+	uint64_t lowTemp;
+	uint64_t avgTemp;
+	uint64_t recentHigh;
+	uint64_t recentLow;
+	uint64_t autoCalibrationFail;
+	uint64_t slcNandDataRead;
+	uint64_t tlcNandDataRead;
+	uint64_t validBlockCounts;
+	uint64_t sclNandWrites;
+	uint64_t tlcNandWrites;
+	uint64_t tlc_qlcWearLevelingCount;
+	uint64_t slcWearLevelingCount;
+	uint64_t tlcNandWritesDueToWearLeveling;
+	uint64_t slcNandWritesDueToWearLeveing;
+	uint64_t currentTLCSpareSuperBlock;
+	uint64_t currentSLCSpareSuperBlock;
+	uint64_t slcToTLCDefragCount;
+	uint64_t tlcDefragCount;
+	uint64_t slcDefragCount;
+	uint64_t readBackFailCount;
+	uint64_t tlcProgramFail;
+	uint64_t slcProgramFail;
+	uint64_t tlcEraseFail;
+	uint64_t slcEraseFail;
+	uint64_t tlcEraseCycleAvg;
+	uint64_t tlcEraseCycleMax;
+	uint64_t tlcEraseCycleMin;
+	uint64_t slcEraseCycleAvg;
+	uint64_t slcEraseCycleMax;
+	uint64_t slcEraseCycleMin;
+	uint64_t ps0ToPs1Entry;
+	uint64_t ps1ToPs0Exit;
+	uint64_t ps1ToPs2Entry;
+	uint64_t ps2ToPs1Exit;
+	uint64_t ps2ToPsShutDownEntry;
+	uint64_t linkDownshift;
+	uint64_t idleSleepCount;
+	uint64_t l1EventCount;
+	uint64_t ecrcEventCount;
+	uint64_t lcrcEventCount;
+	uint64_t slc2tlcDataEvictionIdle;
+	uint64_t slc2tlcDataEvictionRuntime;
+	uint64_t dramEccCorrected;
+	uint64_t sramEccCorrected;
+	uint64_t e2eFailDetected;
+	uint64_t ps3_5Count;
+	uint64_t throttlingLightCount;
+	uint64_t throttlingHeavyCount;
+	uint64_t throttlingLightDuration;
+	uint64_t throttlingHeavyDuration;
+	uint64_t retryCount;
+	uint64_t softDecodeCount;
+	uint64_t manfBadBlocks;
+	uint64_t manfBadBlocksWorst;
+	uint64_t slcValidBlockCounts;
+	uint64_t tlcValidBlockCounts;
+	uint64_t slcSystemBlockWrites;
+	uint64_t slcWritesDueToReadDistrub;
+	uint64_t tlcWritesDueToReadDistrub;
+	uint64_t maxOpenBlockSsgsCount;
+	uint64_t maxClosedBlockSsgsCount;
+	uint64_t l2pTableSwap;
+	uint64_t ignore1;
+	uint64_t slcMaxCwErrorCountWithRrPass;
+	uint64_t tlc_qlcMaxCwErrorCountWithRrPass;
+	uint64_t totalErasePoolBlockCount;
+	uint64_t dslcBlocksInLinkTable;
+	uint64_t maxDslcEraseCycleCount;
+	uint64_t avgDslcEraseCycleCount;
+	uint64_t dslcNandWrite;
+	uint64_t dslcNandRead;
+	uint64_t dslcToDslcDefragCount;
+	uint64_t dslcProgramFail;
+	uint64_t dslcEraseFail;
+	uint64_t dslcRetiredBlocks;
+	uint64_t dslcAllocSize;
+	uint64_t reconditionCounts;
+	uint64_t minDslcEraseCount;
+	uint64_t maxTotalEraseCount;
+	uint64_t minTotalEraseCount;
+	uint64_t avgTotalEraseCount;
+	uint64_t maxOpenSsgsCount;
+	uint64_t maxClosedSsgsCount;
+	uint64_t slcDummyWrites;
+	uint64_t tlcDummyWrites;
+	uint64_t dslcDummyWrites;
+	uint64_t ignore2;
+	uint64_t dummyReads;
+	uint64_t coreDumpCount;
+	uint64_t dataTrim;
+	uint64_t ignore3[13];
+	uint64_t tlcWaiWithDslcAsTlcSize;
+	uint64_t tlcWaiWithDslcAsSlcSize;
+	uint64_t slcWai;
+	uint64_t tlcTotalEraseCount;
+	uint64_t slcTotalEraseCount;
+	uint64_t dslcTotalEraseCount;
+	uint64_t tlcBlockSectorCount;
+	uint64_t mapBlockPopCount;
+	uint64_t gwProBlockPopCount;
+	uint64_t dramRetrainCount;
+} bali_vs_logpage_c6h;
+
 // Maverick telemetry data block description
-typedef struct _nvme_host_tele_log_data_t
+typedef struct _mav_host_tele_log_data_t
 {
     // Thermal info                         offset 0x200
     uint8_t  res0[16];
@@ -147,9 +275,138 @@ typedef struct _nvme_host_tele_log_data_t
     uint32_t pciex1_link_count;             ///< Total PCIe link up in width=x1 count
     uint32_t pciex2_link_count;             ///< Total PCIe link up in width=x2 count
     uint32_t pciex4_link_count;             ///< Total PCIe link up in width=x4 count
-} nvme_host_tele_log_data_t;
+} mav_host_tele_log_data_t;
 
-static void print_tel_data_block(nvme_host_tele_log_data_t* data_block)
+static void print_bali_log_c6h(bali_vs_logpage_c6h* data_block) {
+	printf("version8: ");
+	uint64_t version8 = data_block->version8;
+	for (int i = 0; i < 8; i++) {
+		printf("%d", (char) ((version8 & 0xff00000000000000) >> 56));
+		version8 = version8 << 8;
+	}
+	printf("\n");
+    printf("reallocSectorCount: %ld\n", data_block->reallocSectorCount);
+    printf("slcReallocSectorCount: %ld\n", data_block->slcReallocSectorCount);
+    printf("powerOnHoursCount: %ld\n", data_block->powerOnHoursCount);
+    printf("uncorrectableErrorCount1: %ld\n", data_block->uncorrectableErrorCount1);
+    printf("uncorrectableErrorCount2: %ld\n", data_block->uncorrectableErrorCount2);
+    printf("eccUnc: %ld\n", data_block->eccUnc);
+    printf("softLDPCCorrectionEventCount: %ld\n", data_block->softLDPCCorrectionEventCount);
+    printf("tlcReadRetryFail: %ld\n", data_block->tlcReadRetryFail);
+    printf("slcReadRetryFail: %ld\n", data_block->slcReadRetryFail);
+    printf("temperature: %ld\n", data_block->temperature);
+    printf("readRetryTrigger: %ld\n", data_block->readRetryTrigger);
+    printf("totalLBAsWritten: %ld\n", data_block->totalLBAsWritten);
+    printf("totalLBAsRead: %ld\n", data_block->totalLBAsRead);
+    printf("ps3Count: %ld\n", data_block->ps3Count);
+    printf("ps4Count: %ld\n", data_block->ps4Count);
+    printf("l1_2Count: %ld\n", data_block->l1_2Count);
+    printf("tlcAvailSpareBlocks: %ld\n", data_block->tlcAvailSpareBlocks);
+    printf("slcAvailSpareBlocks: %ld\n", data_block->slcAvailSpareBlocks);
+    printf("wearRangeDelta1: %ld\n", data_block->wearRangeDelta1);
+    printf("wearRangeDelta2: %ld\n", data_block->wearRangeDelta2);
+    printf("highTemp: %ld\n", data_block->highTemp);
+    printf("lowTemp: %ld\n", data_block->lowTemp);
+    printf("avgTemp: %ld\n", data_block->avgTemp);
+    printf("recentHigh: %ld\n", data_block->recentHigh);
+    printf("recentLow: %ld\n", data_block->recentLow);
+    printf("autoCalibrationFail: %ld\n", data_block->autoCalibrationFail);
+    printf("slcNandDataRead: %ld\n", data_block->slcNandDataRead);
+    printf("tlcNandDataRead: %ld\n", data_block->tlcNandDataRead);
+    printf("validBlockCounts: %ld\n", data_block->validBlockCounts);
+    printf("sclNandWrites: %ld\n", data_block->sclNandWrites);
+    printf("tlcNandWrites: %ld\n", data_block->tlcNandWrites);
+    printf("tlc_qlcWearLevelingCount: %ld\n", data_block->tlc_qlcWearLevelingCount);
+    printf("slcWearLevelingCount: %ld\n", data_block->slcWearLevelingCount);
+    printf("tlcNandWritesDueToWearLeveling: %ld\n", data_block->tlcNandWritesDueToWearLeveling);
+    printf("slcNandWritesDueToWearLeveing: %ld\n", data_block->slcNandWritesDueToWearLeveing);
+    printf("currentTLCSpareSuperBlock: %ld\n", data_block->currentTLCSpareSuperBlock);
+    printf("currentSLCSpareSuperBlock: %ld\n", data_block->currentSLCSpareSuperBlock);
+    printf("slcToTLCDefragCount: %ld\n", data_block->slcToTLCDefragCount);
+    printf("tlcDefragCount: %ld\n", data_block->tlcDefragCount);
+    printf("slcDefragCount: %ld\n", data_block->slcDefragCount);
+    printf("readBackFailCount: %ld\n", data_block->readBackFailCount);
+    printf("tlcProgramFail: %ld\n", data_block->tlcProgramFail);
+    printf("slcProgramFail: %ld\n", data_block->slcProgramFail);
+    printf("tlcEraseFail: %ld\n", data_block->tlcEraseFail);
+    printf("slcEraseFail: %ld\n", data_block->slcEraseFail);
+    printf("tlcEraseCycleAvg: %ld\n", data_block->tlcEraseCycleAvg);
+    printf("tlcEraseCycleMax: %ld\n", data_block->tlcEraseCycleMax);
+    printf("tlcEraseCycleMin: %ld\n", data_block->tlcEraseCycleMin);
+    printf("slcEraseCycleAvg: %ld\n", data_block->slcEraseCycleAvg);
+    printf("slcEraseCycleMax: %ld\n", data_block->slcEraseCycleMax);
+    printf("slcEraseCycleMin: %ld\n", data_block->slcEraseCycleMin);
+    printf("ps0ToPs1Entry: %ld\n", data_block->ps0ToPs1Entry);
+    printf("ps1ToPs0Exit: %ld\n", data_block->ps1ToPs0Exit);
+    printf("ps1ToPs2Entry: %ld\n", data_block->ps1ToPs2Entry);
+    printf("ps2ToPs1Exit: %ld\n", data_block->ps2ToPs1Exit);
+    printf("ps2ToPsShutDownEntry: %ld\n", data_block->ps2ToPsShutDownEntry);
+    printf("linkDownshift: %ld\n", data_block->linkDownshift);
+    printf("idleSleepCount: %ld\n", data_block->idleSleepCount);
+    printf("l1EventCount: %ld\n", data_block->l1EventCount);
+    printf("ecrcEventCount: %ld\n", data_block->ecrcEventCount);
+    printf("lcrcEventCount: %ld\n", data_block->lcrcEventCount);
+    printf("slc2tlcDataEvictionIdle: %ld\n", data_block->slc2tlcDataEvictionIdle);
+    printf("slc2tlcDataEvictionRuntime: %ld\n", data_block->slc2tlcDataEvictionRuntime);
+    printf("dramEccCorrected: %ld\n", data_block->dramEccCorrected);
+    printf("sramEccCorrected: %ld\n", data_block->sramEccCorrected);
+    printf("e2eFailDetected: %ld\n", data_block->e2eFailDetected);
+    printf("ps3_5Count: %ld\n", data_block->ps3_5Count);
+    printf("throttlingLightCount: %ld\n", data_block->throttlingLightCount);
+    printf("throttlingHeavyCount: %ld\n", data_block->throttlingHeavyCount);
+    printf("throttlingLightDuration: %ld\n", data_block->throttlingLightDuration);
+    printf("throttlingHeavyDuration: %ld\n", data_block->throttlingHeavyDuration);
+    printf("retryCount: %ld\n", data_block->retryCount);
+    printf("softDecodeCount: %ld\n", data_block->softDecodeCount);
+    printf("manfBadBlocks: %ld\n", data_block->manfBadBlocks);
+    printf("manfBadBlocksWorst: %ld\n", data_block->manfBadBlocksWorst);
+    printf("slcValidBlockCounts: %ld\n", data_block->slcValidBlockCounts);
+    printf("tlcValidBlockCounts: %ld\n", data_block->tlcValidBlockCounts);
+    printf("slcSystemBlockWrites: %ld\n", data_block->slcSystemBlockWrites);
+    printf("slcWritesDueToReadDistrub: %ld\n", data_block->slcWritesDueToReadDistrub);
+    printf("tlcWritesDueToReadDistrub: %ld\n", data_block->tlcWritesDueToReadDistrub);
+    printf("maxOpenBlockSsgsCount: %ld\n", data_block->maxOpenBlockSsgsCount);
+    printf("maxClosedBlockSsgsCount: %ld\n", data_block->maxClosedBlockSsgsCount);
+    printf("l2pTableSwap: %ld\n", data_block->l2pTableSwap);
+    printf("slcMaxCwErrorCountWithRrPass: %ld\n", data_block->slcMaxCwErrorCountWithRrPass);
+    printf("tlc_qlcMaxCwErrorCountWithRrPass: %ld\n", data_block->tlc_qlcMaxCwErrorCountWithRrPass);
+    printf("totalErasePoolBlockCount: %ld\n", data_block->totalErasePoolBlockCount);
+    printf("dslcBlocksInLinkTable: %ld\n", data_block->dslcBlocksInLinkTable);
+    printf("maxDslcEraseCycleCount: %ld\n", data_block->maxDslcEraseCycleCount);
+    printf("avgDslcEraseCycleCount: %ld\n", data_block->avgDslcEraseCycleCount);
+    printf("dslcNandWrite: %ld\n", data_block->dslcNandWrite);
+    printf("dslcNandRead: %ld\n", data_block->dslcNandRead);
+    printf("dslcToDslcDefragCount: %ld\n", data_block->dslcToDslcDefragCount);
+    printf("dslcProgramFail: %ld\n", data_block->dslcProgramFail);
+    printf("dslcEraseFail: %ld\n", data_block->dslcEraseFail);
+    printf("dslcRetiredBlocks: %ld\n", data_block->dslcRetiredBlocks);
+    printf("dslcAllocSize: %ld\n", data_block->dslcAllocSize);
+    printf("reconditionCounts: %ld\n", data_block->reconditionCounts);
+    printf("minDslcEraseCount: %ld\n", data_block->minDslcEraseCount);
+    printf("maxTotalEraseCount: %ld\n", data_block->maxTotalEraseCount);
+    printf("minTotalEraseCount: %ld\n", data_block->minTotalEraseCount);
+    printf("avgTotalEraseCount: %ld\n", data_block->avgTotalEraseCount);
+    printf("maxOpenSsgsCount: %ld\n", data_block->maxOpenSsgsCount);
+    printf("maxClosedSsgsCount: %ld\n", data_block->maxClosedSsgsCount);
+    printf("slcDummyWrites: %ld\n", data_block->slcDummyWrites);
+    printf("tlcDummyWrites: %ld\n", data_block->tlcDummyWrites);
+    printf("dslcDummyWrites: %ld\n", data_block->dslcDummyWrites);
+    printf("dummyReads: %ld\n", data_block->dummyReads);
+    printf("coreDumpCount: %ld\n", data_block->coreDumpCount);
+    printf("dataTrim: %ld\n", data_block->dataTrim);
+    printf("tlcWaiWithDslcAsTlcSize: %ld\n", data_block->tlcWaiWithDslcAsTlcSize);
+    printf("tlcWaiWithDslcAsSlcSize: %ld\n", data_block->tlcWaiWithDslcAsSlcSize);
+    printf("slcWai: %ld\n", data_block->slcWai);
+    printf("tlcTotalEraseCount: %ld\n", data_block->tlcTotalEraseCount);
+    printf("slcTotalEraseCount: %ld\n", data_block->slcTotalEraseCount);
+    printf("dslcTotalEraseCount: %ld\n", data_block->dslcTotalEraseCount);
+    printf("tlcBlockSectorCount: %ld\n", data_block->tlcBlockSectorCount);
+    printf("mapBlockPopCount: %ld\n", data_block->mapBlockPopCount);
+    printf("gwProBlockPopCount: %ld\n", data_block->gwProBlockPopCount);
+    printf("dramRetrainCount: %ld\n", data_block->dramRetrainCount);
+}
+
+static void print_tel_data_block(mav_host_tele_log_data_t* data_block)
 {
 	printf("min composite temp: %d\n", data_block->min_composite_temp);
 	printf("max composite temp: %d\n", data_block->max_composite_temp);
@@ -1283,10 +1540,39 @@ static int vt_parse_maverick_telemetry(int argc, char **argv, struct command *cm
 	unsigned char* log_data = malloc(log_len);
 	int err = nvme_get_log(fd, NVME_NSID_ALL, 7, 0, 1, log_len, log_data);
 
-	nvme_host_tele_log_data_t data_block;
+	mav_host_tele_log_data_t data_block;
 	memcpy(&data_block, log_data + 512, sizeof(data_block));
 
 	print_tel_data_block(&data_block);
+
+	free(log_data);
+
+	return err;
+}
+
+static int vt_parse_bali_vs_info(int argc, char **argv, struct command *cmd, struct plugin *plugin)
+{
+	OPT_ARGS(opts) = {
+		OPT_END()
+	};
+
+	int fd = parse_and_open(argc, argv, "", opts);
+	if (fd < 0) {
+		printf("Error parse and open (fd = %d)\n", fd);
+		return -1;
+	}
+
+	int log_len = 4096;
+	unsigned char* log_data = malloc(log_len);
+	int err = nvme_get_log(fd, NVME_NSID_ALL, 0xc6, 0, 1, log_len, log_data);
+
+	if (err != 0) {
+		printf("Invalid log page access!\n");
+	} else {
+		bali_vs_logpage_c6h data_block;
+		memcpy(&data_block, log_data, sizeof(data_block));
+		print_bali_log_c6h(&data_block);
+	}
 
 	free(log_data);
 
