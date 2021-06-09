@@ -54,8 +54,8 @@ struct vtview_save_log_settings {
 };
 
 
-// SM226X (Bali) vendor specific log page 0xC6
-typedef struct _bali_vs_logpage_c6h {
+// SM226X (series61) vendor specific log page 0xC6
+typedef struct _series61_vs_logpage_c6h {
 	uint64_t version8;
 	uint64_t reallocSectorCount;
 	uint64_t slcReallocSectorCount;
@@ -179,7 +179,7 @@ typedef struct _bali_vs_logpage_c6h {
 	uint64_t mapBlockPopCount;
 	uint64_t gwProBlockPopCount;
 	uint64_t dramRetrainCount;
-} bali_vs_logpage_c6h;
+} series61_vs_logpage_c6h;
 
 // Maverick telemetry data block description
 typedef struct _mav_host_tele_log_data_t
@@ -277,7 +277,7 @@ typedef struct _mav_host_tele_log_data_t
     uint32_t pciex4_link_count;             ///< Total PCIe link up in width=x4 count
 } mav_host_tele_log_data_t;
 
-static void print_bali_log_c6h(bali_vs_logpage_c6h* data_block) {
+static void print_series61_log_c6h(series61_vs_logpage_c6h* data_block) {
 	printf("version8: ");
 	uint64_t version8 = data_block->version8;
 	for (int i = 0; i < 8; i++) {
@@ -1550,7 +1550,7 @@ static int vt_parse_maverick_telemetry(int argc, char **argv, struct command *cm
 	return err;
 }
 
-static int vt_parse_bali_vs_info(int argc, char **argv, struct command *cmd, struct plugin *plugin)
+static int vt_parse_series61_vs_info(int argc, char **argv, struct command *cmd, struct plugin *plugin)
 {
 	OPT_ARGS(opts) = {
 		OPT_END()
@@ -1569,9 +1569,9 @@ static int vt_parse_bali_vs_info(int argc, char **argv, struct command *cmd, str
 	if (err != 0) {
 		printf("Invalid log page access!\n");
 	} else {
-		bali_vs_logpage_c6h data_block;
+		series61_vs_logpage_c6h data_block;
 		memcpy(&data_block, log_data, sizeof(data_block));
-		print_bali_log_c6h(&data_block);
+		print_series61_log_c6h(&data_block);
 	}
 
 	free(log_data);
