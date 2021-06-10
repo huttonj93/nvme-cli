@@ -24,9 +24,9 @@ The following are all implemented sub-commands:
                              The data in this log file can be analyzed using excel or using Virtium’s vtView.
                              Visit vtView.virtium.com to see full potential uses of the data
   show-identify              Shows detail features and current settings
-  get-maverick-fw-version    Prints custom firmware string for Maverick devices to the console
-  parse-maverick-telemetry   Prints formatted Maverick-specific telemetry data block
-  parse-series61-vs-info     Prints formatted Series-61-specific info block (Log 0xC6h)
+  get-series32-fw-version    Prints custom firmware string for Series 32 devices to the console
+  parse-series32-telemetry   Prints formatted Series 32-specific telemetry data block
+  parse-series61-vs-info     Prints formatted Series 61-specific info block (Log 0xC6h)
   version                    Shows the program version
   help                       Display this help
 
