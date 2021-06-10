@@ -181,7 +181,7 @@ typedef struct _series61_vs_logpage_c6h {
 	uint64_t dramRetrainCount;
 } series61_vs_logpage_c6h;
 
-// Maverick telemetry data block description
+// series32 telemetry data block description
 typedef struct _mav_host_tele_log_data_t
 {
     // Thermal info                         offset 0x200
@@ -1467,7 +1467,7 @@ static int vt_show_identify(int argc, char **argv, struct command *cmd, struct p
 	return (err);
 }
 
-static int vt_get_maverick_fw_string(int argc, char **argv, struct command *cmd, struct plugin *plugin) 
+static int vt_get_series32_fw_string(int argc, char **argv, struct command *cmd, struct plugin *plugin) 
 {
 	int fd, ret;
 	int cmd_data_len = 512;
@@ -1524,7 +1524,7 @@ static int vt_get_maverick_fw_string(int argc, char **argv, struct command *cmd,
 	return ret;
 }
 
-static int vt_parse_maverick_telemetry(int argc, char **argv, struct command *cmd, struct plugin *plugin)
+static int vt_parse_series32_telemetry(int argc, char **argv, struct command *cmd, struct plugin *plugin)
 {
 	OPT_ARGS(opts) = {
 		OPT_END()
