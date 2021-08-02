@@ -16,6 +16,10 @@ PLUGIN(NAME("virtium", "Virtium vendor specific extensions"),
             ENTRY("get-series32-fw-version", "Prints custom firmware string for Series 32 devices to the console", vt_get_series32_fw_string)
             ENTRY("parse-series32-telemetry", "Prints formatted Series 32-specific telemetry data block", vt_parse_series32_telemetry)
             ENTRY("parse-series61-vs-info", "Prints formatted Series 61-specific info block (Log 0xC6h)", vt_parse_series61_vs_info)
+            ENTRY("get-sn", "Prints the serial number string to the console", vt_get_sn_info)
+            ENTRY("get-mn", "Prints the model number string to the console", vt_get_mn_info)
+            ENTRY("get-event-log", "Prints the event log to file", vt_get_event_log)
+	        ENTRY("get-crash-info", "Prings the crash info", vt_get_crash_info)
     )
 );
 
