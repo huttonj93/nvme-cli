@@ -19,7 +19,7 @@ PLUGIN(NAME("virtium", "Virtium vendor specific extensions"),
             ENTRY("get-sn", "Prints the serial number string to the console", vt_get_sn_info)
             ENTRY("get-mn", "Prints the model number string to the console", vt_get_mn_info)
             ENTRY("get-event-log", "Prints the event log to file", vt_get_event_log)
-	        ENTRY("get-crash-info", "Prings the crash info", vt_get_crash_info)
+	    ENTRY("get-crash-info", "Prings the crash info", vt_get_crash_info)
     )
 );
 
