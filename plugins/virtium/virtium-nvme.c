@@ -1524,6 +1524,394 @@ static int vt_get_series32_fw_string(int argc, char **argv, struct command *cmd,
 	return ret;
 }
 
+static int vt_get_sn_info(int argc, char **argv, struct command *cmd, struct plugin *plugin)
+{
+    int fd, ret;
+    int cmd_data_len = 512;
+    int ret_len = 20;
+    
+    OPT_ARGS(opts) = {
+        OPT_END()
+    };
+    
+    fd = parse_and_open(argc, argv, "", opts);
+    if (fd < 0) {
+        printf("Error parse and open (fd = %d)\n", fd);
+        return -1;
+    }
+    
+    __u8* data = calloc(cmd_data_len, sizeof(__u8));
+    data[0] = 0x25;
+    data[1] = 0x05;
+    data[2] = 0x01;
+
+    struct nvme_admin_cmd setup_vsc_get_fw = {
+        .opcode = 0xfd,
+        .cdw12 = 0x00fc,
+        .cdw10 = 128,
+        .data_len = cmd_data_len,
+        .addr = (uintptr_t)data
+    };
+
+    // setup vsc
+    ret = nvme_submit_admin_passthru(fd, &setup_vsc_get_fw);
+    if (ret != 0) {
+        printf("Error during admin cmd passthru setup (ret = %d)!\n", ret);
+        free(data);
+        return ret;
+    }
+
+    struct nvme_admin_cmd vsc_get_sn = {
+        .opcode = 0xfe,
+        .cdw12 = 0x00fd,
+        .cdw10 = 5,
+        .data_len = ret_len,
+        .addr = (uintptr_t)data
+    };
+
+    // exec vsc and get fw string back
+    ret = nvme_submit_admin_passthru(fd, &vsc_get_sn);
+    if (ret != 0) {
+        printf("Error during admin cmd passthru (ret = %d)!\n", ret);
+        free(data);
+        return ret;
+    }
+    printf("SN String: %s\n", data);
+    
+    free(data);
+
+    return ret;
+}
+
+static int vt_get_mn_info(int argc, char **argv, struct command *cmd, struct plugin *plugin)
+{
+    int fd, ret;
+    int cmd_data_len = 512;
+    int ret_len = 40;
+    
+    OPT_ARGS(opts) = {
+        OPT_END()
+    };
+    
+    fd = parse_and_open(argc, argv, "", opts);
+    if (fd < 0) {
+        printf("Error parse and open (fd = %d)\n", fd);
+        return -1;
+    }
+    
+    __u8* data = calloc(cmd_data_len, sizeof(__u8));
+    data[0] = 0x25;
+    data[1] = 0x05;
+
+    struct nvme_admin_cmd setup_vsc_get_fw = {
+        .opcode = 0xfd,
+        .cdw12 = 0x00fc,
+        .cdw10 = 128,
+        .data_len = cmd_data_len,
+        .addr = (uintptr_t)data
+    };
+
+    // setup vsc
+    ret = nvme_submit_admin_passthru(fd, &setup_vsc_get_fw);
+    if (ret != 0) {
+        printf("Error during admin cmd passthru setup (ret = %d)!\n", ret);
+        free(data);
+        return ret;
+    }
+
+    struct nvme_admin_cmd vsc_get_mn = {
+        .opcode = 0xfe,
+        .cdw12 = 0x00fd,
+        .cdw10 = 10,
+        .data_len = ret_len,
+        .addr = (uintptr_t)data
+    };
+
+    // exec vsc and get mn string back
+    ret = nvme_submit_admin_passthru(fd, &vsc_get_mn);
+    if (ret != 0) {
+        printf("Error during admin cmd passthru (ret = %d)!\n", ret);
+        free(data);
+        return ret;
+    }
+    printf("MN String: %s\n", data);
+    
+    free(data);
+
+    return ret;
+}
+
+static int vt_get_event_log(int argc, char **argv, struct command *cmd, struct plugin *plugin)
+{
+    int fd, ret;
+    int cmd_data_len = 512;
+    int ret_len = 12;
+ 
+    OPT_ARGS(opts) = {
+        OPT_END()
+    };
+ 
+    fd = parse_and_open(argc, argv, "", opts);
+    if (fd < 0) {
+        printf("Error parse and open (fd = %d)\n", fd);
+        return -1;
+    }
+ 
+    __u8* data = calloc(cmd_data_len, sizeof(__u8));
+    data[0] = 0x82;
+    data[1] = 1;
+    data[2] = 0;
+    data[3] = 0;
+    data[4] = 2;
+ 
+    struct nvme_admin_cmd setup_vsc_get_info = {
+        .opcode = 0xfd,
+        .cdw12 = 0x00fc,
+        .cdw10 = 128,
+        .data_len = cmd_data_len,
+        .addr = (uintptr_t)data
+    };
+ 
+    // setup vsc to get event info
+    ret = nvme_submit_admin_passthru(fd, &setup_vsc_get_info);
+    if (ret != 0) {
+        printf("Error during admin cmd passthru setup (ret = %d)!\n", ret);
+        free(data);
+        return ret;
+    } 
+ 
+    struct nvme_admin_cmd vsc_get_info = {
+        .opcode = 0xfe,
+        .cdw12 = 0x00fd,
+        .cdw10 = 3,
+        .data_len = ret_len,
+        .addr = (uintptr_t)data
+    };
+ 
+    // exec vsc and get event info
+    ret = nvme_submit_admin_passthru(fd, &vsc_get_info);
+    if (ret != 0) {
+        printf("Error during admin cmd passthru (ret = %d)!\n", ret);
+        free(data);
+        return ret;
+    }
+   
+    // convert event info into a readable format using readinfo.py
+    FILE *fp;
+    fp = fopen("_temp.dat","wb");
+    for(int i =0; i<= ret_len;i++)
+    {
+        fputc(data[i],fp);
+    }
+    fclose(fp);
+    char str[80];
+    fp = popen("python3 readinfo.py _temp.dat","r");
+    while(fgets(str,sizeof(str),fp) != NULL)
+    {
+        NULL;
+    }
+    pclose(fp);
+    //remove("_temp.bat");
+   
+    int numRecords = atoi(strtok(str," "));
+    int recordSize = atoi(strtok(NULL," "));
+    int recordType = atoi(strtok(NULL," "));
+ 
+    if (recordType != 2)
+    {
+        printf("Expected token type logs. Exiting\n");
+        return ret;
+        free(data);
+    }
+   
+    // create vsc to get event logs
+    __u8* dataInput = calloc(cmd_data_len, sizeof(__u8));
+    dataInput[0] = 0x83;
+    dataInput[1] = 0x01;
+   
+    struct nvme_admin_cmd setup_vsc_get_log = {
+        .opcode = 0xfd,
+        .cdw12 = 0x00fc,
+        .cdw10 = 128,
+        .data_len = cmd_data_len,
+        .addr = (uintptr_t)dataInput
+    };
+
+    // exec vsc to get event logs
+    printf("Extracting %d event log blocks from drive to eventlog.dat\n",numRecords);
+    fp = fopen("eventlog.dat","wb");
+    for (int i=0; i<numRecords;i++)
+    {
+        __u8* dataOutput = calloc(recordSize, sizeof(__u8));
+        ret = nvme_submit_admin_passthru(fd, &setup_vsc_get_log);
+        if (ret != 0) {
+            printf("Error during admin cmd passthru setup(ret = %d)!\n", ret);
+            free(data);
+            free(dataInput);
+            free(dataOutput);
+            fclose(fp);
+            return ret;
+        }
+            
+        struct nvme_admin_cmd vsc_get_log = {
+           .opcode = 0xfe,
+           .cdw12 = 0x00fd,
+           .cdw10 = recordSize,
+           .data_len = recordSize,
+           .addr = (uintptr_t)dataOutput
+        };
+       
+        ret = nvme_submit_admin_passthru(fd, &vsc_get_log);
+        if (ret != 0) {
+            printf("Error during admin cmd passthru(ret = %d)!\n", ret);
+            free(data);
+            free(dataInput);
+            free(dataOutput);
+            fclose(fp);
+            return ret;
+        }
+	for(int i =0; i<recordSize;i++)
+        {
+            fputc(dataOutput[i],fp);
+        } 
+        free(dataOutput);
+    }
+    printf("Finished extracting event log blocks\n");
+    fclose(fp);
+    free(data);
+    free(dataInput);
+ 
+    return ret;
+}
+
+static int vt_get_crash_info(int argc, char **argv, struct command *cmd, struct plugin *plugin)
+{
+    int fd, ret;
+    int cmd_data_len = 512;
+    int ret_len = 4096;
+    bool do_erase = false;
+    const char *erase = "(optional) Erase the crash info";
+ 
+    OPT_ARGS(opts) = {
+	OPT_FLAG("do-erase",'e',&do_erase,erase),
+        OPT_END()
+    };
+ 
+    fd = parse_and_open(argc, argv, "", opts);
+    if (fd < 0) {
+        printf("Error parse and open (fd = %d)\n", fd);
+        return -1;
+    }
+ 
+    __u8* dataInput = calloc(cmd_data_len, sizeof(__u8));
+    dataInput[0] = 0x77;
+    dataInput[1] = 0x01;
+ 
+    struct nvme_admin_cmd setup_vsc_get_info = {
+        .opcode = 0xfd,
+        .cdw12 = 0x00fc,
+        .cdw10 = 128,
+        .data_len = cmd_data_len,
+        .addr = (uintptr_t)dataInput
+    };
+ 
+    // setup vsc to get crash info
+    ret = nvme_submit_admin_passthru(fd, &setup_vsc_get_info);
+    if (ret != 0) {
+        printf("Error during admin cmd passthru setup (ret = %d)!\n", ret);
+        free(dataInput);
+        return ret;
+    } 
+    __u8* dataOutput = calloc(ret_len, sizeof(__u8));
+    struct nvme_admin_cmd vsc_get_info = {
+        .opcode = 0xfe,
+        .cdw12 = 0x00fd,
+        .cdw10 = 1024,
+        .data_len = ret_len,
+        .addr = (uintptr_t)dataOutput
+    };
+ 
+    // exec vsc and get crash info
+    ret = nvme_submit_admin_passthru(fd, &vsc_get_info);
+    if (ret != 0) {
+        printf("Error during admin cmd passthru (ret = %d)!\n", ret);
+        free(dataOutput);
+	free(dataInput);
+        return ret;
+    }
+   
+    // convert crash info into a readable format using readcrashinfo.py
+    FILE *fp;
+    fp = fopen("_temp.dat","wb");
+    for(int i =0; i<= ret_len;i++)
+    {
+        fputc(dataOutput[i],fp);
+    }
+    fclose(fp);
+    char str[80];
+    fp = popen("python3 readcrashinfo.py _temp.dat","r");
+    while(fgets(str,sizeof(str),fp) != NULL)
+    {
+        NULL;
+    }
+    pclose(fp);
+    remove("_temp.bat");
+   
+    int pageSize = atoi(strtok(str," "));
+    int pageCount = atoi(strtok(NULL," "));
+    int numImages = atoi(strtok(NULL," "));
+    int imageSize = atoi(strtok(NULL," "));
+    printf("Number of images: %d\nPage Size: %d\nPage Count: %d\n"
+           "Image Size: %d\n",numImages,pageSize,pageCount,imageSize);
+    if (do_erase)
+    {
+        if (numImages != 0)
+	{
+	    struct nvme_admin_cmd setup_vsc_get_info = {
+	        .opcode = 0xfd,
+		.cdw12 = 0x00fc,
+		.cdw10 = 128,
+		.data_len = cmd_data_len,
+		.addr = (uintptr_t)dataInput
+	    };
+	    ret = nvme_submit_admin_passthru(fd, &setup_vsc_get_info);
+	    if (ret != 0) 
+	    {
+	        printf("Error during admin cmd passthru setup, erase crashdump failed (ret = %d)!\n", ret);
+		free(dataInput);
+		free(dataOutput);
+		return ret;
+            }
+	    struct nvme_admin_cmd vsc_get_info = {
+		.opcode = 0xfe,
+		.cdw12 = 0x00fd,
+		.cdw10 = 1024,
+		.data_len = cmd_data_len,
+		.addr = (uintptr_t)dataOutput
+	    };
+	    ret = nvme_submit_admin_passthru(fd, &vsc_get_info);
+	    if (ret != 0) 
+	    {
+		printf("Error during admin cmd passthru, erase crashdump failed (ret = %d)!\n", ret);
+		free(dataInput);
+		free(dataOutput);
+		return ret;
+	    }
+	    else
+	    {
+		printf("Crashdump erased\n");
+	    }
+        }
+        else
+        {
+	    printf("Nothing to erase\n");
+        }
+    }
+    free(dataInput);
+    free(dataOutput);
+    return ret;
+}
+
 static int vt_parse_series32_telemetry(int argc, char **argv, struct command *cmd, struct plugin *plugin)
 {
 	OPT_ARGS(opts) = {
