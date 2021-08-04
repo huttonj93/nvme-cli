@@ -1711,7 +1711,7 @@ static int vt_get_event_log(int argc, char **argv, struct command *cmd, struct p
 		NULL;
 	}
 	pclose(fp);
-	remove("_temp.bat");
+	remove("_temp.dat");
    
 	int numRecords = atoi(strtok(str," "));
 	int recordSize = atoi(strtok(NULL," "));
@@ -1802,23 +1802,23 @@ static int vt_get_crash_info(int argc, char **argv, struct command *cmd, struct 
 		return -1;
 	}
  
-	__u8* dataInput = calloc(cmd_data_len, sizeof(__u8));
-	dataInput[0] = 0x77;
-	dataInput[1] = 0x01;
+	__u8* data = calloc(cmd_data_len, sizeof(__u8));
+	data[0] = 0x77;
+	data[1] = 0x01;
  
 	struct nvme_admin_cmd setup_vsc_get_info = {
 		.opcode = 0xfd,
 		.cdw12 = 0x00fc,
 		.cdw10 = 128,
 		.data_len = cmd_data_len,
-		.addr = (uintptr_t)dataInput
+		.addr = (uintptr_t)data
 	};
  
 	// setup vsc to get crash info
 	ret = nvme_submit_admin_passthru(fd, &setup_vsc_get_info);
 	if (ret != 0) {
 		printf("Error during admin cmd passthru setup (ret = %d)!\n", ret);
-		free(dataInput);
+		free(data);
 		return ret;
 	} 
 	__u8* dataOutput = calloc(ret_len, sizeof(__u8));
@@ -1835,7 +1835,7 @@ static int vt_get_crash_info(int argc, char **argv, struct command *cmd, struct 
 	if (ret != 0) {
 		printf("Error during admin cmd passthru (ret = %d)!\n", ret);
 		free(dataOutput);
-		free(dataInput);
+		free(data);
 		return ret;
 	}
    
@@ -1854,7 +1854,7 @@ static int vt_get_crash_info(int argc, char **argv, struct command *cmd, struct 
 		NULL;
 	}
 	pclose(fp);
-	remove("_temp.bat");
+	remove("_temp.dat");
    
 	int pageSize = atoi(strtok(str," "));
 	int pageCount = atoi(strtok(NULL," "));
@@ -1862,52 +1862,202 @@ static int vt_get_crash_info(int argc, char **argv, struct command *cmd, struct 
 	int imageSize = atoi(strtok(NULL," "));
 	printf("Number of images: %d\nPage Size: %d\nPage Count: %d\n"
 	       "Image Size: %d\n",numImages,pageSize,pageCount,imageSize);
+
 	if (do_erase)
 	{
 		if (numImages != 0)
 		{
-			struct nvme_admin_cmd setup_vsc_get_info = {
+			__u8* dataInput = calloc(cmd_data_len, sizeof(__u8));
+			dataInput[0] = 0x79;
+			dataInput[1] = 0x01;
+			struct nvme_admin_cmd setup_vsc_delete_info = {
 				.opcode = 0xfd,
 				.cdw12 = 0x00fc,
 				.cdw10 = 128,
 				.data_len = cmd_data_len,
 				.addr = (uintptr_t)dataInput
 			};
-			ret = nvme_submit_admin_passthru(fd, &setup_vsc_get_info);
+			ret = nvme_submit_admin_passthru(fd, &setup_vsc_delete_info);
 			if (ret != 0) 
 			{
 				printf("Error during admin cmd passthru setup, erase crashdump failed (ret = %d)!\n", ret);
 				free(dataInput);
 				free(dataOutput);
+				free(data);
 				return ret;
 			}
-			struct nvme_admin_cmd vsc_get_info = {
+			struct nvme_admin_cmd vsc_delete_info = {
 				.opcode = 0xfe,
 				.cdw12 = 0x00fd,
 				.cdw10 = 1024,
 				.data_len = cmd_data_len,
 				.addr = (uintptr_t)dataOutput
 			};
-			ret = nvme_submit_admin_passthru(fd, &vsc_get_info);
+			ret = nvme_submit_admin_passthru(fd, &vsc_delete_info);
 			if (ret != 0) 
 			{
 				printf("Error during admin cmd passthru, erase crashdump failed (ret = %d)!\n", ret);
 				free(dataInput);
 				free(dataOutput);
+				free(data);
 				return ret;
 			}
 			else
 			{
 				printf("Crashdump erased\n");
 			}
+			free(dataInput);
 		}
 		else
 		{
 			printf("Nothing to erase\n");
 		}
 	}
+	free(dataOutput);
+	free(data);
+	return ret;
+}
+
+static int vt_get_crash_dump(int argc, char **argv, struct command *cmd, struct plugin *plugin)
+{
+   	int fd, ret;
+   	int cmd_data_len = 512;
+   	int ret_len = 4096;
+   	int image_num = 1;
+   	const char *img_num = "(optional) Set the dump image";
+   	OPT_ARGS(opts) = {
+       	OPT_INT("img-dump",'i',&image_num,img_num),
+       	OPT_END()
+   	};
+   	fd = parse_and_open(argc, argv, "", opts);
+   	if (fd < 0) {
+       	printf("Error parse and open (fd = %d)\n", fd);
+       	return -1;
+   	}
+
+   	__u8* data = calloc(cmd_data_len, sizeof(__u8));
+   	data[0] = 0x77;
+   	data[1] = 0x01;
+   	struct nvme_admin_cmd setup_vsc_get_info = {
+       	.opcode = 0xfd,
+       	.cdw12 = 0x00fc,
+       	.cdw10 = 128,
+       	.data_len = cmd_data_len,
+       	.addr = (uintptr_t)data
+   	};
+   	// setup vsc to get crash info
+   	ret = nvme_submit_admin_passthru(fd, &setup_vsc_get_info);
+   	if (ret != 0) {
+       	printf("Error during admin cmd passthru setup (ret = %d)!\n", ret);
+       	free(data);
+       	return ret;
+   	}
+   	__u8* dataOutput = calloc(ret_len, sizeof(__u8));
+   	struct nvme_admin_cmd vsc_get_info = {
+       	.opcode = 0xfe,
+       	.cdw12 = 0x00fd,
+       	.cdw10 = 1024,
+       	.data_len = ret_len,
+       	.addr = (uintptr_t)dataOutput
+   	};
+   	// exec vsc and get crash info
+   	ret = nvme_submit_admin_passthru(fd, &vsc_get_info);
+   	if (ret != 0) {
+       	printf("Error during admin cmd passthru (ret = %d)!\n", ret);
+       	free(dataOutput);
+       	free(data);
+       	return ret;
+   	}
+ 
+   	// convert crash info into a readable format using readcrashinfo.py
+   	FILE *fp;
+   	fp = fopen("_temp.dat","wb");
+   	for(int i =0; i<= ret_len;i++)
+   	{
+       	fputc(dataOutput[i],fp);
+   	}
+   	fclose(fp);
+   	char str[80];
+   	fp = popen("python3 readcrashinfo.py _temp.dat","r");
+   	while(fgets(str,sizeof(str),fp) != NULL)
+   	{
+       	NULL;
+   	}
+   	pclose(fp);
+   	remove("_temp.dat");
+ 
+   	int pageSize = atoi(strtok(str," "));
+   	pageSize = pageSize + 0x200;
+   	int pageWords = pageSize / 4;
+   	int pageCount = atoi(strtok(NULL," "));
+   	int numImages = atoi(strtok(NULL," "));
+	//int imageSize = atoi(strtok(NULL," "));
+	if (image_num > numImages)
+	{
+    	printf("No crash dump %d on drive. Only %d images. Exiting\n",image_num,numImages);
+    	free(data);
+    	free(dataOutput);
+    	return ret;
+	}
+ 
+   	// create vsc file to get crash data
+	__u8* dataInput = calloc(cmd_data_len, sizeof(__u8));
+	dataInput[0] = 0x78;
+	dataInput[1] = 0x01;
+	// patch in image number
+	dataInput[2] = image_num;
+	printf("Extracting %d pages of crash data from drive to file crashdump.dat\n",pageCount);
+	int index = 3;
+	fp = fopen("crashdump.dat","wb");
+	for (int i=0; i< pageCount;i++)
+	{
+
+		//patch in page number
+	   	dataInput[index] = i%256;
+	   	dataInput[index+1] = i/256;
+	   	index = index +2;
+	   	struct nvme_admin_cmd setup_vsc_get_dump = {
+    		.opcode = 0xfd,
+       		.cdw12 = 0x00fc,
+       		.cdw10 = 128,
+       		.data_len = cmd_data_len,
+       		.addr = (uintptr_t)dataInput
+   		};
+		ret = nvme_submit_admin_passthru(fd, &setup_vsc_get_dump);
+   		if (ret != 0) {
+       		printf("Error during admin cmd passthru setup (ret = %d)!\n", ret);
+       		free(data);
+			free(dataInput);
+       		return ret;
+   		}
+		__u8* crashData = calloc(pageSize, sizeof(__u8));
+		struct nvme_admin_cmd vsc_get_dump = {
+    		.opcode = 0xfe,
+       		.cdw12 = 0x00fd,
+       		.cdw10 = pageWords,
+       		.data_len = cmd_data_len,
+       		.addr = (uintptr_t)crashData
+   		};
+		ret = nvme_submit_admin_passthru(fd, &vsc_get_dump);
+   		if (ret != 0) {
+       		printf("Error during admin cmd passthru setup (ret = %d)!\n", ret);
+       		free(data);
+			free(dataInput);
+			free(dataOutput);
+			free(crashData);
+       		return ret;
+   		}
+		for(int i =0; i<pageSize;i++)
+		{
+			fputc(crashData[i],fp);
+		}
+		free(crashData);
+	}
+	printf("Finished extracting crash dump\n");
+	fclose(fp);
 	free(dataInput);
 	free(dataOutput);
+	free(data);
 	return ret;
 }
 
