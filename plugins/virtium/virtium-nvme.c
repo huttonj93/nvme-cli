@@ -2061,6 +2061,241 @@ static int vt_get_crash_dump(int argc, char **argv, struct command *cmd, struct 
 	return ret;
 }
 
+static int vt_set_info(int argc, char **argv, struct command *cmd, struct plugin *plugin)
+{
+   	int fd, ret;
+   	int cmd_data_len = 512;
+   	int ret_len = 20;
+   	const char *serial_num = "";
+	const char *model_num = "";
+   	const char *serial = "set the serial num";
+	const char *model = "set the model num";
+   	OPT_ARGS(opts) = {
+       	OPT_STRING("serial-num",'s',"SERIAL",&serial_num,serial),
+		OPT_STRING("model-num",'n',"MODEL",&model_num,model),
+       	OPT_END()
+   	};
+   	fd = parse_and_open(argc, argv, "", opts);
+   	if (fd < 0) {
+       	printf("Error parse and open (fd = %d)\n", fd);
+       	return -1;
+   	}
+
+   	
+	if (strcmp(serial_num,"")!=0)
+	{
+		__u8* data = calloc(cmd_data_len, sizeof(__u8));
+		data[0] = 0x26;
+   		data[1] = 0x05;
+		data[2] = 0x01;
+
+		struct nvme_admin_cmd setup_vsc_set_info = {
+       		.opcode = 0xfd,
+       		.cdw12 = 0x00fc,
+       		.cdw10 = 128,
+       		.data_len = cmd_data_len,
+       		.addr = (uintptr_t)data
+   		};
+   		// setup vsc to set serial num
+   		ret = nvme_submit_admin_passthru(fd, &setup_vsc_set_info);
+   		if (ret != 0) {
+       		printf("Error during admin cmd passthru setup (ret = %d)!\n", ret);
+       		free(data);
+       		return ret;
+   		}
+		__u8* dataInput = calloc(sizeof(serial_num), sizeof(__u8));
+		for (int i = 0; i < strlen(serial_num);i++)
+		{
+			dataInput[i] = serial_num[i];
+		}
+		struct nvme_admin_cmd vsc_set_info = {
+       		.opcode = 0xfd,
+       		.cdw12 = 0x00fd,
+       		.cdw10 = 5,
+       		.data_len = ret_len,
+       		.addr = (uintptr_t)dataInput
+   		};
+		ret = nvme_submit_admin_passthru(fd, &vsc_set_info);
+		if (ret != 0) {
+       		printf("Error during admin cmd passthru  (ret = %d)!\n", ret);
+       		free(data);
+			free(dataInput);
+       		return ret;
+   		}
+		free(data);
+		free(dataInput);
+	}
+
+   	if (strcmp(model_num,"")!=0)
+	{
+		ret_len = 40;
+		__u8* data = calloc(cmd_data_len, sizeof(__u8));
+		data[0] = 0x26;
+   		data[1] = 0x05;
+		data[2] = 0x00;
+
+		struct nvme_admin_cmd setup_vsc_set_info = {
+       		.opcode = 0xfd,
+       		.cdw12 = 0x00fc,
+       		.cdw10 = 128,
+       		.data_len = cmd_data_len,
+       		.addr = (uintptr_t)data
+   		};
+   		// setup vsc to set model num
+   		ret = nvme_submit_admin_passthru(fd, &setup_vsc_set_info);
+   		if (ret != 0) {
+       		printf("Error during admin cmd passthru setup 2(ret = %d)!\n", ret);
+       		free(data);
+       		return ret;
+   		}
+		__u8* dataInput = calloc(sizeof(model_num), sizeof(__u8));
+		for (int i = 0; i < strlen(model_num);i++)
+		{
+			dataInput[i] = model_num[i];
+		}
+		struct nvme_admin_cmd vsc_set_info = {
+       		.opcode = 0xfd,
+       		.cdw12 = 0x00fd,
+       		.cdw10 = 10,
+       		.data_len = ret_len,
+       		.addr = (uintptr_t)dataInput
+   		};
+		ret = nvme_submit_admin_passthru(fd, &vsc_set_info);
+		if (ret != 0) {
+       		printf("Error during admin cmd passthru 2 (ret = %d)!\n", ret);
+       		free(data);
+			free(dataInput);
+       		return ret;
+   		}
+		free(data);
+		free(dataInput);
+	}
+   	
+	return ret;
+}
+
+static int vt_get_op_info(int argc, char **argv, struct command *cmd, struct plugin *plugin)
+{
+	int fd, ret;
+	int cmd_data_len = 512;
+	int ret_len = 4;
+    
+	OPT_ARGS(opts) = {
+		OPT_END()
+	};
+    
+	fd = parse_and_open(argc, argv, "", opts);
+	if (fd < 0) {
+		printf("Error parse and open (fd = %d)\n", fd);
+		return -1;
+	}
+    
+	__u8* data = calloc(cmd_data_len, sizeof(__u8));
+	data[0] = 0x27;
+	data[1] = 0x05;
+
+	struct nvme_admin_cmd setup_vsc_get_op = {
+		.opcode = 0xfd,
+		.cdw12 = 0x00fc,
+		.cdw10 = 128,
+		.data_len = cmd_data_len,
+		.addr = (uintptr_t)data
+	};
+
+	// setup vsc
+	ret = nvme_submit_admin_passthru(fd, &setup_vsc_get_op);
+	if (ret != 0) {
+		printf("Error during admin cmd passthru setup (ret = %d)!\n", ret);
+		free(data);
+		return ret;
+	}
+
+	struct nvme_admin_cmd vsc_get_op = {
+		.opcode = 0xfe,
+		.cdw12 = 0x00fd,
+		.cdw10 = 1,
+		.data_len = ret_len,
+		.addr = (uintptr_t)data
+	};
+
+	// exec vsc and get mn string back
+	ret = nvme_submit_admin_passthru(fd, &vsc_get_op);
+	if (ret != 0) {
+		printf("Error during admin cmd passthru (ret = %d)!\n", ret);
+		free(data);
+		return ret;
+	}
+	printf("Over Provisioning Percent: %s\n", data);
+    
+	free(data);
+
+	return ret;
+}
+
+static int vt_set_op_info(int argc, char **argv, struct command *cmd, struct plugin *plugin)
+{
+	int fd, ret;
+	int cmd_data_len = 512;
+	int ret_len = 10;
+    const char *op = "";
+   	const char *set_op = "set the over provision percent (0x0 to 0xffffffff)";
+
+	OPT_ARGS(opts) = {
+		OPT_STRING("over-provision",'o',"OP",&op,set_op),
+		OPT_END()
+	};
+    
+	fd = parse_and_open(argc, argv, "", opts);
+	if (fd < 0) {
+		printf("Error parse and open (fd = %d)\n", fd);
+		return -1;
+	}
+    
+	__u8* data = calloc(cmd_data_len, sizeof(__u8));
+	data[0] = 0x27;
+	data[1] = 0x05;
+	data[2] = 0x01;
+	for (int i = 0; i < strlen(op);i++)
+	{
+		data[i+3] = op[i];
+	}
+	struct nvme_admin_cmd setup_vsc_set_op = {
+		.opcode = 0xfd,
+		.cdw12 = 0x00fc,
+		.cdw10 = 128,
+		.data_len = cmd_data_len,
+		.addr = (uintptr_t)data
+	};
+
+	// setup vsc
+	ret = nvme_submit_admin_passthru(fd, &setup_vsc_set_op);
+	if (ret != 0) {
+		printf("Error during admin cmd passthru setup (ret = %d)!\n", ret);
+		free(data);
+		return ret;
+	}
+
+	struct nvme_admin_cmd vsc_set_op = {
+		.opcode = 0xfe,
+		.cdw12 = 0x00fd,
+		.cdw10 = 3,
+		.data_len = ret_len,
+		.addr = (uintptr_t)data
+	};
+
+	// exec vsc and set the op
+	ret = nvme_submit_admin_passthru(fd, &vsc_set_op);
+	if (ret != 0) {
+		printf("Error during admin cmd passthru (ret = %d)!\n", ret);
+		free(data);
+		return ret;
+	}
+    
+	free(data);
+
+	return ret;
+}
+
 static int vt_parse_series32_telemetry(int argc, char **argv, struct command *cmd, struct plugin *plugin)
 {
 	OPT_ARGS(opts) = {
