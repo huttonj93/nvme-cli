@@ -24,6 +24,11 @@ PLUGIN(NAME("virtium", "Virtium vendor specific extensions"),
 	    ENTRY("set-info", "set the model number or serial number", vt_set_info)
             ENTRY("get-op", "get the drive over provisioning percent", vt_get_op_info)
             ENTRY("set-op", "set the drive over provisioning percent", vt_set_op_info)
+	    ENTRY("get-gen", "get the current PCIe generation info", vt_get_gen_info)
+            ENTRY("set-gen", "set max PCIe generation to use", vt_set_gen_info)
+            ENTRY("get-width", "get the pcie bus width info", vt_get_width_info)
+            ENTRY("set-width", "set the pcie bus width info", vt_set_width_info)
+            ENTRY("set-uart-control", "turn the uart control on or off", vt_set_uart_contrl)
     )
 );
 
