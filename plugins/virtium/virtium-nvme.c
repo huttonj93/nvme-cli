@@ -2296,6 +2296,354 @@ static int vt_set_op_info(int argc, char **argv, struct command *cmd, struct plu
 	return ret;
 }
 
+static int vt_get_gen_info(int argc, char **argv, struct command *cmd, struct plugin *plugin)
+{
+	int fd, ret;
+	int cmd_data_len = 512;
+	int ret_len = 4;
+
+	OPT_ARGS(opts) = {
+		OPT_END()
+	};
+    
+	fd = parse_and_open(argc, argv, "", opts);
+	if (fd < 0) {
+		printf("Error parse and open (fd = %d)\n", fd);
+		return -1;
+	}
+    
+	__u8* data = calloc(cmd_data_len, sizeof(__u8));
+	data[0] = 0x24;
+	data[1] = 0x05;
+	data[2] = 0x03;
+	
+	struct nvme_admin_cmd setup_vsc_get_gen = {
+		.opcode = 0xfd,
+		.cdw12 = 0x00fc,
+		.cdw10 = 128,
+		.data_len = cmd_data_len,
+		.addr = (uintptr_t)data
+	};
+
+	// setup vsc
+	ret = nvme_submit_admin_passthru(fd, &setup_vsc_get_gen);
+	if (ret != 0) {
+		printf("Error during admin cmd passthru setup (ret = %d)!\n", ret);
+		free(data);
+		return ret;
+	}
+
+	struct nvme_admin_cmd vsc_get_gen = {
+		.opcode = 0xfe,
+		.cdw12 = 0x00fd,
+		.cdw10 = 1,
+		.data_len = ret_len,
+		.addr = (uintptr_t)data
+	};
+
+	// exec vsc and get the pcie generation
+	ret = nvme_submit_admin_passthru(fd, &vsc_get_gen);
+	if (ret != 0) {
+		printf("Error during admin cmd passthru (ret = %d)!\n", ret);
+		free(data);
+		return ret;
+	}
+    	printf("PCIE generation: %s\n",data);
+	free(data);
+
+	return ret;
+}
+
+static int vt_set_gen_info(int argc, char **argv, struct command *cmd, struct plugin *plugin)
+{
+	int fd, ret;
+	int cmd_data_len = 512;
+	int ret_len = 4;
+	const char *vsccode = "0x05";
+   	const char *vsc_code = "set vsccode";
+	const char *gen = "4";
+	const char *gen_string = "set the max generation";
+
+	OPT_ARGS(opts) = {
+		OPT_STRING("vsccode",'s',"VSC",&vsccode,vsc_code),
+		OPT_STRING("gen",'g',"GEN",&gen,gen_string),
+		OPT_END()
+	};
+    
+	fd = parse_and_open(argc, argv, "", opts);
+	if (fd < 0) {
+		printf("Error parse and open (fd = %d)\n", fd);
+		return -1;
+	}
+    
+	__u8* data = calloc(cmd_data_len, sizeof(__u8));
+	data[0] = 0x24;
+	data[1] = 0x05;
+	for (int i = 0; i < strlen(vsccode);i++)
+	{
+		data[i+2] = vsccode[i];
+	}
+	data[strlen(vsccode)+1] = gen[0];
+
+	if (strcmp(vsccode,"0x05")==0)
+	{
+		printf("Setting pcie gen to %s on drive\n",vsccode);
+	}
+	else
+	{
+		printf("Saving pcie gen to %s on drive\n",vsccode);
+	}
+	
+
+	struct nvme_admin_cmd setup_vsc_set_gen = {
+		.opcode = 0xfd,
+		.cdw12 = 0x00fc,
+		.cdw10 = 128,
+		.data_len = cmd_data_len,
+		.addr = (uintptr_t)data
+	};
+
+	// setup vsc
+	ret = nvme_submit_admin_passthru(fd, &setup_vsc_set_gen);
+	if (ret != 0) {
+		printf("Error during admin cmd passthru setup (ret = %d)!\n", ret);
+		free(data);
+		return ret;
+	}
+
+	struct nvme_admin_cmd vsc_set_gen = {
+		.opcode = 0xfe,
+		.cdw12 = 0x00fd,
+		.cdw10 = 1,
+		.data_len = ret_len,
+		.addr = (uintptr_t)data
+	};
+
+	// exec vsc and set the pcie generation
+	ret = nvme_submit_admin_passthru(fd, &vsc_set_gen);
+	if (ret != 0) {
+		printf("Error during admin cmd passthru (ret = %d)!\n", ret);
+		free(data);
+		return ret;
+	}
+    
+	free(data);
+
+	return ret;
+}
+
+static int vt_get_width_info(int argc, char **argv, struct command *cmd, struct plugin *plugin)
+{
+	int fd, ret;
+	int cmd_data_len = 512;
+	int ret_len = 4;
+	
+	OPT_ARGS(opts) = {
+		OPT_END()
+	};
+    
+	fd = parse_and_open(argc, argv, "", opts);
+	if (fd < 0) {
+		printf("Error parse and open (fd = %d)\n", fd);
+		return -1;
+	}
+    
+	__u8* data = calloc(cmd_data_len, sizeof(__u8));
+	data[0] = 0x24;
+	data[1] = 0x05;
+	data[2] = 0x00;
+
+	struct nvme_admin_cmd setup_vsc_get_width = {
+		.opcode = 0xfd,
+		.cdw12 = 0x00fc,
+		.cdw10 = 128,
+		.data_len = cmd_data_len,
+		.addr = (uintptr_t)data
+	};
+
+	// setup vsc
+	ret = nvme_submit_admin_passthru(fd, &setup_vsc_get_width);
+	if (ret != 0) {
+		printf("Error during admin cmd passthru setup (ret = %d)!\n", ret);
+		free(data);
+		return ret;
+	}
+
+	struct nvme_admin_cmd vsc_get_width = {
+		.opcode = 0xfe,
+		.cdw12 = 0x00fd,
+		.cdw10 = 1,
+		.data_len = ret_len,
+		.addr = (uintptr_t)data
+	};
+
+	// exec vsc and get the pcie width
+	ret = nvme_submit_admin_passthru(fd, &vsc_get_width);
+	if (ret != 0) {
+		printf("Error during admin cmd passthru (ret = %d)!\n", ret);
+		free(data);
+		return ret;
+	}
+    
+	printf("PCIe width: %s\n",data);
+	free(data);
+
+	return ret;
+}
+
+static int vt_set_width_info(int argc, char **argv, struct command *cmd, struct plugin *plugin)
+{
+	int fd, ret;
+	int cmd_data_len = 512;
+	int ret_len = 4;
+	const char *vsccode = "0x02";
+   	const char *vsc_code = "set vsccode";
+	const char *width = "4";
+	const char *width_string = "set the bus width";
+
+	OPT_ARGS(opts) = {
+		OPT_STRING("vsccode",'s',"VSC",&vsccode,vsc_code),
+		OPT_STRING("pcie-width",'w',"WDTH",&width,width_string),
+		OPT_END()
+	};
+    
+	fd = parse_and_open(argc, argv, "", opts);
+	if (fd < 0) {
+		printf("Error parse and open (fd = %d)\n", fd);
+		return -1;
+	}
+    
+	__u8* data = calloc(cmd_data_len, sizeof(__u8));
+	data[0] = 0x24;
+	data[1] = 0x05;
+	for (int i = 0; i < strlen(vsccode);i++)
+	{
+		data[i+2] = vsccode[i];
+	}
+	data[strlen(vsccode)+1] = width[0];
+
+	if (strcmp(vsccode,"0x02")==0)
+	{
+		printf("Setting pcie width to %s on drive\n",vsccode);
+	}
+	else
+	{
+		printf("Saving pcie width to %s on drive\n",vsccode);
+	}
+	
+
+	struct nvme_admin_cmd setup_vsc_set_gen = {
+		.opcode = 0xfd,
+		.cdw12 = 0x00fc,
+		.cdw10 = 128,
+		.data_len = cmd_data_len,
+		.addr = (uintptr_t)data
+	};
+
+	// setup vsc
+	ret = nvme_submit_admin_passthru(fd, &setup_vsc_set_gen);
+	if (ret != 0) {
+		printf("Error during admin cmd passthru setup (ret = %d)!\n", ret);
+		free(data);
+		return ret;
+	}
+
+	struct nvme_admin_cmd vsc_set_gen = {
+		.opcode = 0xfe,
+		.cdw12 = 0x00fd,
+		.cdw10 = 1,
+		.data_len = ret_len,
+		.addr = (uintptr_t)data
+	};
+
+	// exec vsc and set the pcie bus width
+	ret = nvme_submit_admin_passthru(fd, &vsc_set_gen);
+	if (ret != 0) {
+		printf("Error during admin cmd passthru (ret = %d)!\n", ret);
+		free(data);
+		return ret;
+	}
+    
+	free(data);
+
+	return ret;
+}
+
+static int vt_set_uart_contrl(int argc, char **argv, struct command *cmd, struct plugin *plugin)
+{
+	int fd, ret;
+	int cmd_data_len = 512;
+	int ret_len = 4;
+	const char *onOff = "";
+   	const char * on_off= "turn the uart on or off";
+
+	OPT_ARGS(opts) = {
+		OPT_STRING("on-off",'s',"ONOFF",&onOff,on_off),
+		OPT_END()
+	};
+    
+	fd = parse_and_open(argc, argv, "", opts);
+	if (fd < 0) {
+		printf("Error parse and open (fd = %d)\n", fd);
+		return -1;
+	}
+
+	__u8* data = calloc(cmd_data_len, sizeof(__u8));
+	data[0] = 0x28;
+	data[1] = 0x05;
+	data[2] = 1;
+	
+    	if (strcmp(onOff,"on")==0)
+	{
+		data[3] = 1;
+	}
+	else if (strcmp(onOff,"off")==0)
+	{
+		data[3] = 0;
+	}
+	else
+	{
+		printf("Error in arugment line: [-s on | off ]\n");
+		return -1;
+	}
+	
+	struct nvme_admin_cmd setup_vsc_set_uart = {
+		.opcode = 0xfd,
+		.cdw12 = 0x00fc,
+		.cdw10 = 128,
+		.data_len = cmd_data_len,
+		.addr = (uintptr_t)data
+	};
+
+	// setup vsc
+	ret = nvme_submit_admin_passthru(fd, &setup_vsc_set_uart);
+	if (ret != 0) {
+		printf("Error during admin cmd passthru setup (ret = %d)!\n", ret);
+		free(data);
+		return ret;
+	}
+
+	struct nvme_admin_cmd vsc_set_uart = {
+		.opcode = 0xfe,
+		.cdw12 = 0x00fd,
+		.cdw10 = 1,
+		.data_len = ret_len,
+		.addr = (uintptr_t)data
+	};
+
+	// exec vsc and set the uart control
+	ret = nvme_submit_admin_passthru(fd, &vsc_set_uart);
+	if (ret != 0) {
+		printf("Error during admin cmd passthru (ret = %d)!\n", ret);
+		free(data);
+		return ret;
+	}
+    
+	printf("data: %s\n",data);
+	free(data);
+	return ret;
+}
+
 static int vt_parse_series32_telemetry(int argc, char **argv, struct command *cmd, struct plugin *plugin)
 {
 	OPT_ARGS(opts) = {
