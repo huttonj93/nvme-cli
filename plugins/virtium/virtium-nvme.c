@@ -2644,6 +2644,345 @@ static int vt_set_uart_contrl(int argc, char **argv, struct command *cmd, struct
 	return ret;
 }
 
+static int vt_reboot(int argc, char **argv, struct command *cmd, struct plugin *plugin)
+{
+	int fd, ret;
+	int cmd_data_len = 512;
+	int ret_len = 4;
+	
+	OPT_ARGS(opts) = {
+		OPT_END()
+	};
+    
+	fd = parse_and_open(argc, argv, "", opts);
+	if (fd < 0) {
+		printf("Error parse and open (fd = %d)\n", fd);
+		return -1;
+	}
+
+	__u8* data = calloc(cmd_data_len, sizeof(__u8));
+	data[0] = 0x0a;
+	data[1] = 0x00;
+	data[2] = 0x01;
+	
+	
+	struct nvme_admin_cmd setup_vsc_reboot = {
+		.opcode = 0xfd,
+		.cdw12 = 0x00fc,
+		.cdw10 = 128,
+		.data_len = cmd_data_len,
+		.addr = (uintptr_t)data
+	};
+
+	// setup vsc
+	ret = nvme_submit_admin_passthru(fd, &setup_vsc_reboot);
+	if (ret != 0) {
+		printf("Error during admin cmd passthru setup (ret = %d)!\n", ret);
+		free(data);
+		return ret;
+	}
+	
+	struct nvme_admin_cmd vsc_reboot = {
+		.opcode = 0xfe,
+		.cdw12 = 0x00fd,
+		.cdw10 = 1,
+		.data_len = ret_len,
+		.addr = (uintptr_t)data
+	};
+
+	// exec vsc and set the uart control
+	ret = nvme_submit_admin_passthru(fd, &vsc_reboot);
+	if (ret != 0) {
+		printf("Error during admin cmd passthru (ret = %d)!\n", ret);
+		free(data);
+		return ret;
+	}
+    
+	printf("Admin command success\n");
+	free(data);
+	return ret;
+}
+
+static int vt_set_psid(int argc, char **argv, struct command *cmd, struct plugin *plugin)
+{
+	int fd, ret;
+	int cmd_data_len = 512;
+	int ret_len = 32;
+	int words = 8;
+	
+	const char *psid = "";
+	const char *opsid = "";
+   	const char *_psid= "the new psid";
+	const char *_opsid = "the old psid";
+
+
+	OPT_ARGS(opts) = {
+		OPT_STRING("new_psid",'p',"NEWPSID",&psid,_psid),
+		OPT_STRING("old_psid",'o',"OLDPSID",&opsid,_opsid),
+		OPT_END()
+	};
+
+	fd = parse_and_open(argc, argv, "", opts);
+	if (fd < 0) {
+		printf("Error parse and open (fd = %d)\n", fd);
+		return -1;
+	}
+
+	if (strlen(psid) != 0){
+		if (strlen(psid)+1 != 32){
+			printf("Psid must be 32 bytes long");
+			return -1;
+		}
+
+		if(strlen(opsid)!=0){
+			if (strlen(opsid)+1 != 32){
+				printf("Old psid must be 32 bytes");
+				return -1;
+			}
+			else{
+				words = 16;
+				ret_len = 64;
+			}
+		}
+
+		__u8* data = calloc(cmd_data_len, sizeof(__u8));
+		data[0] = 0x19;
+		data[1] = 0x00;
+	
+		struct nvme_admin_cmd setup_vsc_set_psid = {
+			.opcode = 0xfd,
+			.cdw12 = 0x00fc,
+			.cdw10 = 128,
+			.data_len = cmd_data_len,
+			.addr = (uintptr_t)data
+		};
+
+		// setup vsc
+		ret = nvme_submit_admin_passthru(fd, &setup_vsc_set_psid);
+		if (ret != 0) {
+			printf("Error during admin cmd passthru setup (ret = %d)!\n", ret);
+			free(data);
+			return ret;
+		}
+
+		__u8* data2 = calloc(cmd_data_len, sizeof(__u8));
+		for (int i = 0; i < strlen(psid);i++){
+			data2[i] = psid[i];
+		}
+		for (int i = 0; i <strlen(opsid);i++){
+			data2[i+strlen(psid)] = opsid[i];
+		}
+
+		struct nvme_admin_cmd vsc_set_psid = {
+			.opcode = 0xfd,
+			.cdw12 = 0x00fd,
+			.cdw10 = words,
+			.data_len = ret_len,
+			.addr = (uintptr_t)data2
+		};
+
+		// exec vsc and set the uart control
+		ret = nvme_submit_admin_passthru(fd, &vsc_set_psid);
+		if (ret != 0) {
+			printf("Error during admin cmd passthru (ret = %d)!\n", ret);
+			free(data);
+			free(data2);
+			return ret;
+		}
+		printf("Admin command success\n");
+		free(data);
+		free(data2);
+	}
+	else{
+		printf("New psid value is required");
+		return -1;
+	}
+	return ret;
+}
+
+static int vt_get_factory_defect(int argc, char **argv, struct command *cmd, struct plugin *plugin)
+{
+	int fd, ret;
+	int cmd_data_len = 512;
+	int ret_len = 0x4000;
+	
+	OPT_ARGS(opts) = {
+		OPT_END()
+	};
+
+	fd = parse_and_open(argc, argv, "", opts);
+	if (fd < 0) {
+		printf("Error parse and open (fd = %d)\n", fd);
+		return -1;
+	}
+
+	__u8* data = calloc(cmd_data_len, sizeof(__u8));
+	data[0] = 0x36;
+	data[1] = 0x05;
+	
+	struct nvme_admin_cmd setup_vsc_get_defect = {
+		.opcode = 0xfd,
+		.cdw12 = 0x00fc,
+		.cdw10 = 128,
+		.data_len = cmd_data_len,
+		.addr = (uintptr_t)data
+	};
+
+	// setup vsc
+	ret = nvme_submit_admin_passthru(fd, &setup_vsc_get_defect);
+	if (ret != 0) {
+		printf("Error during admin cmd passthru setup (ret = %d)!\n", ret);
+		free(data);
+		return ret;
+	}
+
+	struct nvme_admin_cmd vsc_get_defect = {
+		.opcode = 0xfe,
+		.cdw12 = 0x00fd,
+		.cdw10 = 1000,
+		.data_len = ret_len,
+		.addr = (uintptr_t)data
+	};
+
+	// exec vsc and set the uart control
+	ret = nvme_submit_admin_passthru(fd, &vsc_get_defect);
+	if (ret != 0) {
+		if (ret == 16386){
+			printf("Unsupported operation\n");
+			return ret;
+		}
+		printf("Error during admin cmd passthru (ret = %d)!\n", ret);
+		free(data);
+		return ret;
+	}
+
+	printf("%s\n",data);
+	free(data);
+	return ret;
+}
+
+static int vt_get_grown_defect(int argc, char **argv, struct command *cmd, struct plugin *plugin)
+{
+	int fd, ret;
+	int cmd_data_len = 512;
+	int ret_len = 0x4000;
+	
+	OPT_ARGS(opts) = {
+		OPT_END()
+	};
+
+	fd = parse_and_open(argc, argv, "", opts);
+	if (fd < 0) {
+		printf("Error parse and open (fd = %d)\n", fd);
+		return -1;
+	}
+
+	__u8* data = calloc(cmd_data_len, sizeof(__u8));
+	data[0] = 0x37;
+	data[1] = 0x05;
+	
+	struct nvme_admin_cmd setup_vsc_get_defect = {
+		.opcode = 0xfd,
+		.cdw12 = 0x00fc,
+		.cdw10 = 128,
+		.data_len = cmd_data_len,
+		.addr = (uintptr_t)data
+	};
+
+	// setup vsc
+	ret = nvme_submit_admin_passthru(fd, &setup_vsc_get_defect);
+	if (ret != 0) {
+		printf("Error during admin cmd passthru setup (ret = %d)!\n", ret);
+		free(data);
+		return ret;
+	}
+
+	struct nvme_admin_cmd vsc_get_defect = {
+		.opcode = 0xfe,
+		.cdw12 = 0x00fd,
+		.cdw10 = 1000,
+		.data_len = ret_len,
+		.addr = (uintptr_t)data
+	};
+
+	// exec vsc and set the uart control
+	ret = nvme_submit_admin_passthru(fd, &vsc_get_defect);
+	if (ret != 0) {
+		if (ret == 16386){
+			printf("Unsupported operation\n");
+			return ret;
+		}
+		printf("Error during admin cmd passthru (ret = %d)!\n", ret);
+		free(data);
+		return ret;
+	}
+
+	printf("%s\n",data);
+	free(data);
+	return ret;
+}
+
+static int vt_get_erase_count(int argc, char **argv, struct command *cmd, struct plugin *plugin)
+{
+	int fd, ret;
+	int cmd_data_len = 512;
+	int ret_len = 0x4000;
+	
+	OPT_ARGS(opts) = {
+		OPT_END()
+	};
+
+	fd = parse_and_open(argc, argv, "", opts);
+	if (fd < 0) {
+		printf("Error parse and open (fd = %d)\n", fd);
+		return -1;
+	}
+
+	__u8* data = calloc(cmd_data_len, sizeof(__u8));
+	data[0] = 0x38;
+	data[1] = 0x05;
+	
+	struct nvme_admin_cmd setup_vsc_get_defect = {
+		.opcode = 0xfd,
+		.cdw12 = 0x00fc,
+		.cdw10 = 128,
+		.data_len = cmd_data_len,
+		.addr = (uintptr_t)data
+	};
+
+	// setup vsc
+	ret = nvme_submit_admin_passthru(fd, &setup_vsc_get_defect);
+	if (ret != 0) {
+		printf("Error during admin cmd passthru setup (ret = %d)!\n", ret);
+		free(data);
+		return ret;
+	}
+
+	struct nvme_admin_cmd vsc_get_defect = {
+		.opcode = 0xfe,
+		.cdw12 = 0x00fd,
+		.cdw10 = 1000,
+		.data_len = ret_len,
+		.addr = (uintptr_t)data
+	};
+
+	// exec vsc and set the uart control
+	ret = nvme_submit_admin_passthru(fd, &vsc_get_defect);
+	if (ret != 0) {
+		if (ret == 16386){
+			printf("Unsupported operation\n");
+			return ret;
+		}
+		printf("Error during admin cmd passthru (ret = %d)!\n", ret);
+		free(data);
+		return ret;
+	}
+
+	printf("%s\n",data);
+	free(data);
+	return ret;
+}
+
 static int vt_parse_series32_telemetry(int argc, char **argv, struct command *cmd, struct plugin *plugin)
 {
 	OPT_ARGS(opts) = {
