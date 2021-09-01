@@ -29,6 +29,11 @@ PLUGIN(NAME("virtium", "Virtium vendor specific extensions"),
             ENTRY("get-width", "get the pcie bus width info", vt_get_width_info)
             ENTRY("set-width", "set the pcie bus width info", vt_set_width_info)
             ENTRY("set-uart-control", "turn the uart control on or off", vt_set_uart_contrl)
+	    ENTRY("reboot", "reset the drive", vt_reboot)
+            ENTRY("set-psid", "set the psid", vt_set_psid)
+            ENTRY("factory-defect", "get the factory defect", vt_get_factory_defect)
+            ENTRY("grown-defect", "get the grown defect", vt_get_grown_defect)
+            ENTRY("erase-count", "get the erase count", vt_get_erase_count)
     )
 );
 
